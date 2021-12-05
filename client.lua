@@ -124,7 +124,7 @@ function sit(object, modelName, data)
 			currentScenario = data.scenario
 			TaskStartScenarioAtPosition(playerPed, currentScenario, pos.x, pos.y, pos.z + (playerPos.z - pos.z)/2, GetEntityHeading(object) + 180.0, 0, true, false)
 
-			Citizen.Citizen.Wait(2500)
+			Citizen.Wait(2500)
 			if GetEntitySpeed(PlayerPedId()) > 0 then
 				ClearPedTasks(PlayerPedId())
 				TaskStartScenarioAtPosition(playerPed, currentScenario, pos.x, pos.y, pos.z + (playerPos.z - pos.z)/2, GetEntityHeading(object) + 180.0, 0, true, true)
