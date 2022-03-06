@@ -1,13 +1,12 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-
 local debugProps, sitting, lastPos, currentSitCoords, currentScenario, occupied = {}
 local disableControls = false
 local currentObj = nil
 
 
-Citizen.CreateThread(function()
+CreateThread(function()
 	while true do
-		Citizen.Wait(0)
+		Wait(0)
 		local playerPed = PlayerPedId()
 
 		if sitting and not IsPedUsingScenario(playerPed, currentScenario) then
@@ -22,14 +21,14 @@ Citizen.CreateThread(function()
 	end
 end)
 
-Citizen.CreateThread(function()
+CreateThread(function()
 	local Sitables = {}
 
 	for k,v in pairs(Config.Interactables) do
 		local model = GetHashKey(v)
 		table.insert(Sitables, model)
 	end
-	Citizen.Wait(100)
+	Wait(100)
 	exports['qb-target']:AddTargetModel(Sitables, {
         options = {
             {
