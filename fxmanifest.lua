@@ -17,3 +17,5 @@ dependencies {
   'PolyZone', 
   'qb-target' 
 }
+
+lua54 'yes'
