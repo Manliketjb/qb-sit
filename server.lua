@@ -1,5 +1,4 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-
 local seatsTaken = {}
 
 RegisterNetEvent('qb-sit:takePlace', function(objectCoords)
