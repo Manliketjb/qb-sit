@@ -2,6 +2,11 @@ Config = {}
 
 Config.MaxDistance = 1.5
 
+Config.Color = 'rgb(100 100 100)'
+
+Config.GetUpText = 'F - Get Up'
+Config.GetUpKey = 23
+
 Config.Interactables = {
 	'prop_bench_01a',
 	'prop_bench_01b',
