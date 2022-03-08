@@ -1,5 +1,4 @@
 local QBCore = exports['qb-core']:GetCoreObject()
-
 local debugProps, sitting, lastPos, currentSitCoords, currentScenario, occupied = {}
 local disableControls = false
 local currentObj = nil
@@ -8,32 +7,20 @@ exports('sitting', function()
     return sitting
 end)
 
-local function displayNUIText()
-    SendNUIMessage({type = "display", text = Config.GetUpText, color = 'rgb(100 100 100)'})
-    Wait(0)
-end
-
-local function hideNUI()
-    SendNUIMessage({type = "hide"})
-    Wait(0)
-end
-
 Citizen.CreateThread(function()
 	while true do
 		Citizen.Wait(0)
 		local playerPed = PlayerPedId()
 
 		if sitting then
-			displayNUIText() 
-		else
-			hideNUI() 
+			helpText(Config.GetUpText)
 		end
 
 		if sitting and not IsPedUsingScenario(playerPed, currentScenario) then
 			wakeup()
 		end
 
-		if IsControlPressed(0, 23) and IsInputDisabled(0) and IsPedOnFoot(playerPed) then
+		if IsControlPressed(0, Config.GetUpKey) and IsInputDisabled(0) and IsPedOnFoot(playerPed) then
 			if sitting then
 				wakeup()
 			end			
@@ -44,7 +31,7 @@ end)
 Citizen.CreateThread(function()
 	local Sitables = {}
 
-	for k,v in pairs(Config.Interactables) do
+	for _, v in pairs(Config.Interactables) do
 		local model = GetHashKey(v)
 		table.insert(Sitables, model)
 	end
@@ -141,4 +128,10 @@ function sit(object, modelName, data)
 			sitting = true
 		end
 	end, objectCoords)
+end
+
+helpText = function(msg)
+    BeginTextCommandDisplayHelp('STRING')
+    AddTextComponentSubstringPlayerName(msg)
+    EndTextCommandDisplayHelp(0, false, true, -1)
 end
