@@ -11,4 +11,6 @@ qb-target - https://github.com/BerkieBb/qb-target
 
 polyzone - https://github.com/mkafrin/PolyZone
 
+```
 not to be sold or used in paid content!!
+```
