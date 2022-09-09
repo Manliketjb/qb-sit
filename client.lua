@@ -8,22 +8,21 @@ exports('sitting', function()
 end)
 
 Citizen.CreateThread(function()
+	local waitT = 1
 	while true do
-		Citizen.Wait(0)
-		local playerPed = PlayerPedId()
-
+		Citizen.Wait(waitT)
 		if sitting then
+			waitT = 1
+			local playerPed = PlayerPedId()
 			helpText(Config.GetUpText)
-		end
-
-		if sitting and not IsPedUsingScenario(playerPed, currentScenario) then
-			wakeup()
-		end
-
-		if IsControlPressed(0, Config.GetUpKey) and IsInputDisabled(0) and IsPedOnFoot(playerPed) then
-			if sitting then
+			if not IsPedUsingScenario(playerPed, currentScenario) then
 				wakeup()
-			end			
+			end
+			if IsControlPressed(0, Config.GetUpKey) and IsInputDisabled(0) and IsPedOnFoot(playerPed) then
+				wakeup()		
+			end
+		else 
+			waitT = 500
 		end
 	end
 end)
