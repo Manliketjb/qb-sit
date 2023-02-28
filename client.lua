@@ -15,8 +15,10 @@ Citizen.CreateThread(function()
 			waitT = 1
 			local playerPed = PlayerPedId()
 			helpText(Config.GetUpText)
-			if not IsPedUsingScenario(playerPed, currentScenario) then
-				wakeup()
+			if Config.setting then		
+				if not IsPedUsingScenario(playerPed, currentScenario) then
+					wakeup()
+				end
 			end
 			if IsControlPressed(0, Config.GetUpKey) and IsInputDisabled(0) and IsPedOnFoot(playerPed) then
 				wakeup()		
@@ -30,30 +32,32 @@ end)
 Citizen.CreateThread(function()
 	local Sitables = {}
 
-	for _, v in pairs(Config.Interactables) do
-		local model = GetHashKey(v)
-		table.insert(Sitables, model)
+	for k, v in pairs(Config.Interactables) do
+		--local model = GetHashKey(v)
+		--Sitables[#Sitables + 1] = model
+		--Citizen.Wait(100)
+		exports['qb-target']:AddTargetModel(k, {
+			options = {
+				{
+					event = "qb-Sit:Sit",
+					icon = "fas fa-chair",
+					label = "Use",
+					entity = entity
+				},
+			},
+			job = {"all"},
+			distance = Config.MaxDistance
+		})
 	end
-	Citizen.Wait(100)
-	exports['qb-target']:AddTargetModel(Sitables, {
-        options = {
-            {
-                event = "qb-Sit:Sit",
-                icon = "fas fa-chair",
-                label = "Use",
-				entity = entity
-            },
-        },
-        job = {"all"},
-        distance = Config.MaxDistance
-    })
 end)
 
 RegisterNetEvent("qb-Sit:Sit", function(data)
 	local playerPed = PlayerPedId()
 
-	if sitting and not IsPedUsingScenario(playerPed, currentScenario) then
-		wakeup()
+	if Config.setting then
+		if sitting and not IsPedUsingScenario(playerPed, currentScenario) then
+			wakeup()
+		end
 	end
 
 	if disableControls then
@@ -62,10 +66,10 @@ RegisterNetEvent("qb-Sit:Sit", function(data)
 
 	local object, distance = data.entity, #(GetEntityCoords(playerPed) - GetEntityCoords(data.entity))
 
-	if distance and distance < 1.4 then
+	if distance and distance < Config.MaxDistance then
 		local hash = GetEntityModel(object)
 
-		for k,v in pairs(Config.Sitable) do
+		for k, v in pairs(Config.Interactables) do
 			if GetHashKey(k) == hash then
 				sit(object, k, v)
 				break
@@ -77,13 +81,18 @@ end)
 
 function wakeup()
 	local playerPed = PlayerPedId()
-	local pos = GetEntityCoords(PlayerPedId())
+	local pos = GetEntityCoords(playerPed)
 
-	TaskStartScenarioAtPosition(playerPed, currentScenario, 0.0, 0.0, 0.0, 180.0, 2, true, false)
-	while IsPedUsingScenario(PlayerPedId(), currentScenario) do
-		Citizen.Wait(100)
+	if Config.setting then
+		TaskStartScenarioAtPosition(playerPed, currentScenario, 0.0, 0.0, 0.0, 180.0, 2, true, false)
+		while IsPedUsingScenario(playerPed, currentScenario) do
+			Citizen.Wait(100)
+		end
+		ClearPedTasks(playerPed)
+	else
+		TriggerEvent('animations:client:EmoteCommandStart', {"c"})
 	end
-	ClearPedTasks(playerPed)
+
 
 	FreezeEntityPosition(playerPed, false)
 	FreezeEntityPosition(currentObj, false)
@@ -116,14 +125,24 @@ function sit(object, modelName, data)
 			TriggerServerEvent('qb-sit:takePlace', objectCoords)
 			
 			currentScenario = data.scenario
-			TaskStartScenarioAtPosition(playerPed, currentScenario, pos.x, pos.y, pos.z + (playerPos.z - pos.z)/2, GetEntityHeading(object) + 180.0, 0, true, false)
-
-			Citizen.Wait(2500)
-			if GetEntitySpeed(PlayerPedId()) > 0 then
-				ClearPedTasks(PlayerPedId())
-				TaskStartScenarioAtPosition(playerPed, currentScenario, pos.x, pos.y, pos.z + (playerPos.z - pos.z)/2, GetEntityHeading(object) + 180.0, 0, true, true)
+			if Config.setting then
+				TaskStartScenarioAtPosition(playerPed, currentScenario, pos.x, pos.y, pos.z + (playerPos.z - pos.z)/2, GetEntityHeading(object) + 180.0, 0, true, false)
+				Citizen.Wait(2500)
+				if GetEntitySpeed(playerPed) > 0 then
+					ClearPedTasks(playerPed)
+					TaskStartScenarioAtPosition(playerPed, currentScenario, pos.x, pos.y, pos.z + (playerPos.z - pos.z)/2, GetEntityHeading(object) + 180.0, 0, true, true)
+				end
+			else
+				local c = GetEntityCoords(object)
+				local h = GetEntityHeading(object)
+				local forward = GetEntityForwardVector(object)
+				local x, y, z = table.unpack(c - forward * 0.5)
+				local r = GetEntityRotation(object, 5)
+				SetEntityCoords(playerPed, x, y, z - 1.03)
+				SetEntityHeading(playerPed, r.x + 65)
+				Citizen.Wait(1500)
+				TriggerEvent('animations:client:EmoteCommandStart', {Config.dpemote})
 			end
-
 			sitting = true
 		end
 	end, objectCoords)
@@ -132,5 +151,5 @@ end
 helpText = function(msg)
     BeginTextCommandDisplayHelp('STRING')
     AddTextComponentSubstringPlayerName(msg)
-    EndTextCommandDisplayHelp(0, false, true, -1)
+    EndTextCommandDisplayHelp(0, false, false, -1)
 end
